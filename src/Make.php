@@ -29,6 +29,7 @@ use DateTime;
 
 class Make
 {
+    //Alteracoes reforma tributaria teste
     /**
      * @var array
      */
@@ -86,6 +87,10 @@ class Make
      */
     protected $enderEmit;
     /**
+     * @var DOMElement
+     */
+    protected $gCompraGov;
+    /**
      * @var ?DOMElement
      */
     protected $dest;
@@ -105,6 +110,34 @@ class Make
      * @var DOMElement
      */
     protected $total;
+    /**
+     * @var DOMElement
+     */
+    protected $IBSCBSSelTot;
+    /**
+     * @var DOMElement
+     */
+    protected $vBCIBSCBS;
+    /**
+     * @var DOMElement
+     */
+    protected $gSel;
+    /**
+     * @var DOMElement
+     */
+    protected $gIBS;
+    /**
+     * @var DOMElement
+     */
+    protected $gIBSUFTot;
+    /**
+     * @var DOMElement
+     */
+    protected $gIBSMunTot;
+    /**
+     * @var DOMElement
+     */
+    protected $gMono;
     /**
      * @var ?DOMElement
      */
@@ -241,6 +274,22 @@ class Make
      * @var array of DOMElements
      */
     protected $aICMS = [];
+    /**
+     * @var array of DOMElements
+     */
+    protected $aIS = [];
+    /**
+     * @var array of DOMElements
+     */
+    protected $aDFeReferenciado = [];
+    /**
+     * @var array of DOMElements
+     */
+    protected $avItem = [];
+    /**
+     * @var array of DOMElements
+     */
+    protected $aIBSCBS = [];
     /**
      * @var array of DOMElements
      */
@@ -490,6 +539,16 @@ class Make
         foreach ($this->aDet as $det) {
             $this->dom->appChild($this->infNFe, $det, 'Falta tag "infNFe"');
         }
+        $this->IBSCBSSelTot = $this->dom->createElement("IBSCBSSelTot");
+
+        $this->gIBS = $this->dom->createElement("gIBS");
+        $this->dom->appChild($this->IBSCBSSelTot, $this->gSel, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->IBSCBSSelTot, $this->vBCIBSCBS, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->gIBS, $this->gIBSUFTot, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->gIBS, $this->gIBSMunTot, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->IBSCBSSelTot, $this->gIBS, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->IBSCBSSelTot, $this->gMono, 'Falta tag "gIBS"');
+
         //força a construção do total
         $this->total = $this->dom->createElement("total");
         $this->tagISSQNTot($this->stdISSQN);
@@ -501,6 +560,7 @@ class Make
         }
         //[28a] tag total (326 W01)
         $this->dom->appChild($this->infNFe, $this->total, 'Falta tag "infNFe"');
+        $this->dom->appChild($this->infNFe, $this->IBSCBSSelTot, 'Falta tag "infNFe"');
         //mota a tag vol
         $this->buildVol();
         //[32] tag transp (356 X01)
@@ -582,6 +642,9 @@ class Make
             'tpNF',
             'idDest',
             'cMunFG',
+            'cMunFGIBS',
+            'tpNFDebito',
+            'tpNFCredito',
             'tpImp',
             'tpEmis',
             'cDV',
@@ -696,8 +759,35 @@ class Make
             "cMunFG",
             $std->cMunFG,
             true,
-            $identificador . "Código do Município de Ocorrência do Fato Gerador"
+            $identificador . "Código do Município de Ocorrência do Fato Gerador do ICMS"
         );
+        if (!empty($std->cMunFGIBS) && $std->indPres == 5) {
+            $this->dom->addChild(
+                $ide,
+                "cMunFGIBS",
+                $std->cMunFGIBS,
+                false,
+                $identificador . "Código do Município de Ocorrência do Fato Gerador do IBS / CBS"
+            );
+        }
+        if (!empty($std->tpNFDebito)) {
+            $this->dom->addChild(
+                $ide,
+                "tpNFDebito",
+                $std->tpNFDebito,
+                false,
+                $identificador . "Tipo de Nota de Débito"
+            );
+        }
+        if (!empty($std->tpNFCredito)) {
+            $this->dom->addChild(
+                $ide,
+                "tpNFCredito",
+                $std->tpNFCredito,
+                false,
+                $identificador . "Tipo de Nota de Crédito"
+            );
+        }
         $this->dom->addChild(
             $ide,
             "tpImp",
@@ -768,6 +858,17 @@ class Make
             true,
             $identificador . "Versão do Processo de emissão da NF-e"
         );
+
+        if (isset($std->indMultaJuros)) {
+            $this->dom->addChild(
+                $ide,
+                "indMultaJuros",
+                $std->indMultaJuros,
+                false,
+                $identificador . "Indicador de Multa e Juros"
+            );
+        }
+
         if (!empty($std->dhCont) && !empty($std->xJust)) {
             $this->dom->addChild(
                 $ide,
@@ -786,6 +887,46 @@ class Make
         }
         $this->ide = $ide;
         return $ide;
+    }
+
+    /**
+     * Grupo de Compra Governamental  B31 pai B01
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggCompraGov(stdClass $std): DOMElement
+    {
+        $possible = [
+            'tpCompraGov',
+            'pRedutor'
+        ];
+
+        $std = $this->equilizeParameters($std, $possible);
+
+        $identificador = 'B31 <gCompraGov> - ';
+        $this->gCompraGov = $this->dom->createElement("gCompraGov");
+
+        $this->dom->addChild(
+            $this->gCompraGov,
+            "tpCompraGov",
+            $std->tpCompraGov,
+            true,
+            $identificador . "Tipo de compra governamental"
+        );
+
+        $this->dom->addChild(
+            $this->gCompraGov,
+            "pRedutor",
+            $std->pRedutor,
+            true,
+            $identificador . "Percentual de redução de aliquota em compra governamental"
+        );
+
+        $node = $this->ide->getElementsByTagName("finNFe")->item(0);
+
+        $this->ide->insertBefore($this->gCompraGov, $node);
+
+        return $this->gCompraGov;
     }
 
     /**
@@ -3061,6 +3202,886 @@ class Make
         );
         $this->aImposto[$std->item] = $imposto;
         return $imposto;
+    }
+
+    /**
+     * @return void
+     */
+    public function tagIBSCBS(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'CST',
+            'cClassTrib',
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB12 <IBSCBS> - ';
+        $ibsCbs = $this->dom->createElement("IBSCBS");
+
+        $this->dom->addChild(
+            $ibsCbs,
+            'CST',
+            $std->CST,
+            true,
+            "$identificador [item $std->item] Código de Situação Tributária do IBS e CBS"
+        );
+        $this->dom->addChild(
+            $ibsCbs,
+            'cClassTrib',
+            $std->cClassTrib,
+            true,
+            "$identificador [item $std->item] Código de Classificação Tributária do IBS e CBS"
+        );
+        $this->aIBSCBS[$std->item] = $ibsCbs;
+        return $ibsCbs;
+    }
+
+    /**
+     * @return void
+     */
+    public function taggIBSCBS(stdClass $std): DOMElement
+    {
+        $possible = ['item', 'vBC'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB15 <gIBSCBS> - ';
+        $gIBSCBS = $this->dom->createElement("gIBSCBS");
+
+        $this->dom->addChild(
+            $gIBSCBS,
+            'vBC',
+            $this->conditionalNumberFormatting($std->vBC),
+            true,
+            "$identificador [item $std->item] Base de cálculo do IBS e CBS"
+        );
+
+        $this->aIBSCBS[$std->item]->appendChild($gIBSCBS);
+
+        return $gIBSCBS;
+    }
+
+    /**
+     * @return void
+     */
+    public function taggIBSUF(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'pIBSUF',
+            'vTribOP',
+            'pDif',
+            'vDif',
+            'vDevTrib',
+            'pRedAliq',
+            'pAliqEfet',
+            'CSTReg',
+            'cClassTribReg',
+            'pAliqEfetReg',
+            'vTribReg',
+            'vIBSUF'
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB17 <gIBSUF> - ';
+        $gIBSUF = $this->dom->createElement("gIBSUF");
+
+        $this->dom->addChild(
+            $gIBSUF,
+            'pIBSUF',
+            $this->conditionalNumberFormatting($std->pIBSUF, 4),
+            true,
+            "$identificador [item $std->item] Alíquota do IBS de competência das UF"
+        );
+        $this->dom->addChild(
+            $gIBSUF,
+            'vTribOP',
+            $this->conditionalNumberFormatting($std->vTribOP),
+            true,
+            "$identificador [item $std->item] Valor bruto do tributo na operação"
+        );
+        if (isset($std->pDif)) {
+            $identificador = 'UB21 <gDif> - ';
+            $gDif = $this->dom->createElement("gDif");
+            $this->dom->addChild(
+                $gDif,
+                'pDif',
+                $this->conditionalNumberFormatting($std->pDif, 4),
+                true,
+                "$identificador [item $std->item] Percentual do diferimento"
+            );
+            $this->dom->addChild(
+                $gDif,
+                'vDif',
+                $this->conditionalNumberFormatting($std->vDif),
+                true,
+                "$identificador [item $std->item] Valor do Diferimento"
+            );
+            $gIBSUF->appendChild($gDif);
+        }
+        if (isset($std->vDevTrib)) {
+            $identificador = 'UB24 <gDevTrib> - ';
+            $gDevTrib = $this->dom->createElement("gDevTrib");
+            $this->dom->addChild(
+                $gDevTrib,
+                'vDevTrib',
+                $this->conditionalNumberFormatting($std->vDevTrib),
+                true,
+                "$identificador [item $std->item] Valor do tributo devolvido"
+            );
+            $gIBSUF->appendChild($gDevTrib);
+        }
+        if (isset($std->pRedAliq)) {
+            $identificador = 'UB26 <gRed> - ';
+            $gRed = $this->dom->createElement("gRed");
+            $this->dom->addChild(
+                $gRed,
+                'pRedAliq',
+                $this->conditionalNumberFormatting($std->pRedAliq, 4),
+                true,
+                "$identificador [item $std->item] Percentual da redução de alíquota "
+            );
+            $this->dom->addChild(
+                $gRed,
+                'pAliqEfet',
+                $this->conditionalNumberFormatting($std->pAliqEfet, 4),
+                true,
+                "$identificador [item $std->item] Alíquota Efetiva do IBS de competência das UF que será aplicada a Base de Cálculo"
+            );
+            $gIBSUF->appendChild($gRed);
+        }
+        if (isset($std->CSTReg)) {
+            $identificador = 'UB29 <gTribRegular> - ';
+            $gTribRegular = $this->dom->createElement("gTribRegular");
+            $this->dom->addChild(
+                $gTribRegular,
+                'CSTReg',
+                $std->CSTReg,
+                true,
+                "$identificador [item $std->item] Código de Situação Tributária do IBS e CBS"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'cClassTribReg',
+                $std->cClassTribReg,
+                true,
+                "$identificador [item $std->item] Código de Classificação Tributária do IBS e CBS"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'pAliqEfetReg',
+                $this->conditionalNumberFormatting($std->pAliqEfetReg, 4),
+                true,
+                "$identificador [item $std->item] Valor da alíquota"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'vTribReg',
+                $this->conditionalNumberFormatting($std->vTribReg),
+                true,
+                "$identificador [item $std->item] Valor do Tributo (IBS)"
+            );
+            $gIBSUF->appendChild($gTribRegular);
+        }
+        $identificador = 'UB17 <gIBSUF> - ';
+        $this->dom->addChild(
+            $gIBSUF,
+            'vIBSUF',
+            $this->conditionalNumberFormatting($std->vIBSUF),
+            true,
+            "$identificador [item $std->item] Valor do IBS de competência da UF"
+        );
+
+        $this->aIBSCBS[$std->item]->getElementsByTagName("gIBSCBS")->item(0)->appendChild($gIBSUF);
+
+        return $gIBSUF;
+    }
+
+    /**
+     * @return void
+     */
+    public function taggIBSMun(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'pIBSMun',
+            'vTribOP',
+            'pDif',
+            'vDif',
+            'vDevTrib',
+            'pRedAliq',
+            'pAliqEfet',
+            'CSTReg',
+            'cClassTribReg',
+            'pAliqEfetReg',
+            'vTribReg',
+            'vIBSMun'
+        ];
+
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB36 <gIBSMun> - ';
+        $gIBSMun = $this->dom->createElement("gIBSMun");
+
+        $this->dom->addChild(
+            $gIBSMun,
+            'pIBSMun',
+            $this->conditionalNumberFormatting($std->pIBSMun, 4),
+            true,
+            "$identificador [item $std->item] Alíquota do IBS de competência do Município"
+        );
+        $this->dom->addChild(
+            $gIBSMun,
+            'vTribOP',
+            $this->conditionalNumberFormatting($std->vTribOP),
+            true,
+            "$identificador [item $std->item] Valor bruto do tributo na operação"
+        );
+        if (isset($std->pDif)) {
+            $identificador = 'UB40 <gDif> - ';
+            $gDif = $this->dom->createElement("gDif");
+            $this->dom->addChild(
+                $gDif,
+                'pDif',
+                $this->conditionalNumberFormatting($std->pDif, 4),
+                true,
+                "$identificador [item $std->item] Percentual do diferimento"
+            );
+            $this->dom->addChild(
+                $gDif,
+                'vDif',
+                $this->conditionalNumberFormatting($std->vDif),
+                true,
+                "$identificador [item $std->item] Valor do Diferimento"
+            );
+            $gIBSMun->appendChild($gDif);
+        }
+        if (isset($std->vDevTrib)) {
+            $identificador = 'UB43 <gDevTrib> - ';
+            $gDevTrib = $this->dom->createElement("gDevTrib");
+            $this->dom->addChild(
+                $gDevTrib,
+                'vDevTrib',
+                $this->conditionalNumberFormatting($std->vDevTrib),
+                true,
+                "$identificador [item $std->item] Valor do tributo devolvido"
+            );
+            $gIBSMun->appendChild($gDevTrib);
+        }
+        if (isset($std->pRedAliq)) {
+            $identificador = 'UB45 <gRed> - ';
+            $gRed = $this->dom->createElement("gRed");
+            $this->dom->addChild(
+                $gRed,
+                'pRedAliq',
+                $this->conditionalNumberFormatting($std->pRedAliq, 4),
+                true,
+                "$identificador [item $std->item] Percentual da redução de alíquota "
+            );
+            $this->dom->addChild(
+                $gRed,
+                'pAliqEfet',
+                $this->conditionalNumberFormatting($std->pAliqEfet, 4),
+                true,
+                "$identificador [item $std->item] Alíquota Efetiva do IBS de competência do Município que será aplicada a Base de Cálculo"
+            );
+            $gIBSMun->appendChild($gRed);
+        }
+        if (isset($std->CSTReg)) {
+            $identificador = 'UB48 <gTribRegular> - ';
+            $gTribRegular = $this->dom->createElement("gTribRegular");
+            $this->dom->addChild(
+                $gTribRegular,
+                'CSTReg',
+                $std->CSTReg,
+                true,
+                "$identificador [item $std->item] Código de Situação Tributária do IBS e CBS"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'cClassTribReg',
+                $std->cClassTribReg,
+                true,
+                "$identificador [item $std->item] Código de Classificação Tributária do IBS e CBS"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'pAliqEfetReg',
+                $this->conditionalNumberFormatting($std->pAliqEfetReg, 4),
+                true,
+                "$identificador [item $std->item] Valor da alíquota"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'vTribReg',
+                $this->conditionalNumberFormatting($std->vTribReg),
+                true,
+                "$identificador [item $std->item] Valor do Tributo (IBS)"
+            );
+            $gIBSMun->appendChild($gTribRegular);
+        }
+        $identificador = 'UB36 <gIBSMun> - ';
+        $this->dom->addChild(
+            $gIBSMun,
+            'vIBSMun',
+            $this->conditionalNumberFormatting($std->vIBSMun),
+            true,
+            "$identificador [item $std->item] Valor do IBS de competência  do Município"
+        );
+
+        $this->aIBSCBS[$std->item]->getElementsByTagName("gIBSCBS")->item(0)->appendChild($gIBSMun);
+
+        return $gIBSMun;
+    }
+
+    /**
+     * @return void
+     */
+    public function taggIBSCredPres(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'cCredPres',
+            'pCredPres',
+            'vCredPres',
+            'vCredPresCondSus'
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB55 <gIBSCredPres> - ';
+        $gIBSCredPres = $this->dom->createElement("gIBSCredPres");
+
+        $this->dom->addChild(
+            $gIBSCredPres,
+            'cCredPres',
+            $std->cCredPres,
+            true,
+            "$identificador [item $std->item] Código de Classificação do Crédito Presumido"
+        );
+        $this->dom->addChild(
+            $gIBSCredPres,
+            'pCredPres',
+            $this->conditionalNumberFormatting($std->pCredPres, 4),
+            true,
+            "$identificador [item $std->item] Percentual do Crédito Presumido"
+        );
+        $this->dom->addChild(
+            $gIBSCredPres,
+            'vCredPres',
+            $this->conditionalNumberFormatting($std->vCredPres),
+            true,
+            "$identificador [item $std->item] Valor do Crédito Presumido"
+        );
+        $this->dom->addChild(
+            $gIBSCredPres,
+            'vCredPresCondSus',
+            $this->conditionalNumberFormatting($std->vCredPresCondSus),
+            true,
+            "$identificador [item $std->item] Valor do Crédito Presumido em condição suspensiva"
+        );
+
+        $this->aIBSCBS[$std->item]->getElementsByTagName("gIBSCBS")->item(0)->appendChild($gIBSCredPres);
+
+        return $gIBSCredPres;
+    }
+
+    /**
+     * @return void
+     */
+    public function taggIBSCBSMono(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'qBCMono',
+            'adRemIBS',
+            'adRemCBS',
+            'vIBSMono',
+            'vCBSMono',
+            'qBCMonoReten',
+            'adRemIBSReten',
+            'vIBSMonoReten',
+            'adRemCBSReten',
+            'vCBSMonoReten',
+            'qBCMonoRet',
+            'adRemIBSRet',
+            'vIBSMonoRet',
+            'adRemCBSRet',
+            'vCBSMonoRet',
+            'pDifIBS',
+            'vIBSMonoDif',
+            'pDifCBS',
+            'vCBSMonoDif',
+            'vTotIBSMonoItem',
+            'vTotCBSMonoItem',
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB84 <gIBSCBSMono> - ';
+        $gIBSCBSMono = $this->dom->createElement("gIBSCBSMono");
+        if (isset($std->qBCMono)) {
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'qBCMono',
+                $this->conditionalNumberFormatting($std->qBCMono, 4),
+                false,
+                "$identificador [item $std->item] Quantidade tributada na monofasia"
+            );
+        }
+        $this->dom->addChild(
+            $gIBSCBSMono,
+            'adRemIBS',
+            $this->conditionalNumberFormatting($std->adRemIBS, 4),
+            true,
+            "$identificador [item $std->item] Alíquota ad rem do IBS"
+        );
+        $this->dom->addChild(
+            $gIBSCBSMono,
+            'adRemCBS',
+            $this->conditionalNumberFormatting($std->adRemCBS, 4),
+            true,
+            "$identificador [item $std->item] Alíquota ad rem da CBS"
+        );
+        $this->dom->addChild(
+            $gIBSCBSMono,
+            'vIBSMono',
+            $this->conditionalNumberFormatting($std->vIBSMono),
+            true,
+            "$identificador [item $std->item] Valor do IBS monofásico"
+        );
+        $this->dom->addChild(
+            $gIBSCBSMono,
+            'vCBSMono',
+            $this->conditionalNumberFormatting($std->vCBSMono),
+            true,
+            "$identificador [item $std->item] Valor da CBS monofásica"
+        );
+        if (isset($std->qBCMonoReten)) {
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'qBCMonoReten',
+                $this->conditionalNumberFormatting($std->qBCMonoReten, 4),
+                true,
+                "$identificador [item $std->item] Quantidade tributada sujeita à retenção na monofasia"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'adRemIBSReten',
+                $this->conditionalNumberFormatting($std->adRemIBSReten, 4),
+                true,
+                "$identificador [item $std->item] Alíquota ad rem do IBS sujeito a retenção"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'vIBSMonoReten',
+                $this->conditionalNumberFormatting($std->vIBSMonoReten),
+                true,
+                "$identificador [item $std->item] Valor do IBS monofásico sujeito a retenção"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'adRemCBSReten',
+                $this->conditionalNumberFormatting($std->adRemCBSReten, 4),
+                true,
+                "$identificador [item $std->item] Alíquota ad rem da CBS sujeito a retenção"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'vCBSMonoReten',
+                $this->conditionalNumberFormatting($std->vCBSMonoReten),
+                true,
+                "$identificador [item $std->item] Valor da CBS monofásica sujeita a retenção"
+            );
+        }
+        if (isset($std->qBCMonoRet)) {
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'qBCMonoRet',
+                $this->conditionalNumberFormatting($std->qBCMonoRet, 4),
+                true,
+                "$identificador [item $std->item] Quantidade tributada retida anteriormente"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'adRemIBSRet',
+                $this->conditionalNumberFormatting($std->adRemIBSRet, 4),
+                true,
+                "$identificador [item $std->item] Alíquota ad rem do IBS retido anteriormente"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'vIBSMonoRet',
+                $this->conditionalNumberFormatting($std->vIBSMonoRet),
+                true,
+                "$identificador [item $std->item] Valor do IBS retido anteriormente"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'adRemCBSRet',
+                $this->conditionalNumberFormatting($std->adRemCBSRet, 4),
+                true,
+                "$identificador [item $std->item] Alíquota ad rem da CBS retida anteriormente"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'vCBSMonoRet',
+                $this->conditionalNumberFormatting($std->vCBSMonoRet),
+                true,
+                "$identificador [item $std->item] Valor da CBS retida anteriormente"
+            );
+        }
+        if (isset($std->pDifIBS)) {
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'pDifIBS',
+                $this->conditionalNumberFormatting($std->pDifIBS, 4),
+                true,
+                "$identificador [item $std->item] Percentual do diferimento do imposto monofásico"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'vIBSMonoDif',
+                $this->conditionalNumberFormatting($std->vIBSMonoDif),
+                true,
+                "$identificador [item $std->item] Valor do IBS mono diferido"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'pDifCBS',
+                $this->conditionalNumberFormatting($std->pDifCBS, 4),
+                true,
+                "$identificador [item $std->item] Percentual do diferimento do imposto monofásico"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'vCBSMonoDif',
+                $this->conditionalNumberFormatting($std->vCBSMonoDif),
+                true,
+                "$identificador [item $std->item] Valor da CBS Mono diferido"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'vTotIBSMonoItem',
+                $this->conditionalNumberFormatting($std->vTotIBSMonoItem),
+                true,
+                "$identificador [item $std->item] Total de IBS Monofásico"
+            );
+            $this->dom->addChild(
+                $gIBSCBSMono,
+                'vTotCBSMonoItem',
+                $this->conditionalNumberFormatting($std->vTotCBSMonoItem),
+                true,
+                "$identificador [item $std->item] Total da CBS Monofásica"
+            );
+        }
+
+        $this->aIBSCBS[$std->item]->getElementsByTagName("gIBSCBS")->item(0)->appendChild($gIBSCBSMono);
+
+        return $gIBSCBSMono;
+    }
+
+    /**
+     * @return void
+     */
+    public function tagvItem(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'vItem',
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $vItem = $this->dom->createElement("vItem", $this->conditionalNumberFormatting($std->vItem));
+
+        $this->avItem[$std->item] = $vItem;
+
+        return $vItem;
+    }
+
+    /**
+     * @return void
+     */
+    public function tagDFeReferenciado(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'chaveAcesso',
+            'nItem',
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'VC01 <DFeReferenciado> - ';
+        $dfe = $this->dom->createElement("DFeReferenciado");
+        $this->dom->addChild(
+            $dfe,
+            'chaveAcesso',
+            $std->chaveAcesso,
+            true,
+            "$identificador [item $std->item] Chave de acesso do DF-e referenciado "
+        );
+        $this->dom->addChild(
+            $dfe,
+            'nItem',
+            $std->nItem,
+            true,
+            "$identificador [item $std->item] Número do item do documento referenciado"
+        );
+
+        $this->aDFeReferenciado[$std->item] = $dfe;
+
+        return $dfe;
+    }
+
+    /**
+     * @return void
+     */
+    public function tagIS(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'CSTIS',
+            'cClassTribIS',
+            'vBCIS',
+            'pIS',
+            'pISEspec',
+            'uTrib',
+            'qTrib',
+            'vIS',
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB01 <IS> - ';
+        $is = $this->dom->createElement("IS");
+
+        $this->dom->addChild(
+            $is,
+            'CSTIS',
+            $std->CSTIS,
+            true,
+            "$identificador [item $std->item] Código de Situação Tributária do Imposto Seletivo"
+        );
+        $this->dom->addChild(
+            $is,
+            'cClassTribIS',
+            $std->cClassTribIS,
+            true,
+            "$identificador [item $std->item] Código de Classificação Tributária do Imposto Seletivo"
+        );
+        $this->dom->addChild(
+            $is,
+            'vBCIS',
+            $this->conditionalNumberFormatting($std->vBCIS),
+            true,
+            "$identificador [item $std->item] Valor da Base de Cálculo do Imposto Seletivo"
+        );
+        $this->dom->addChild(
+            $is,
+            'pIS',
+            $this->conditionalNumberFormatting($std->pIS, 4),
+            true,
+            "$identificador [item $std->item] Alíquota do Imposto Seletivo"
+        );
+        if (isset($std->pISEspec)) {
+            $this->dom->addChild(
+                $is,
+                'pISEspec',
+                $this->conditionalNumberFormatting($std->pISEspec, 4),
+                false,
+                "$identificador [item $std->item] Alíquota específica por unidade de medida apropriada"
+            );
+        }
+        $this->dom->addChild(
+            $is,
+            "uTrib",
+            $std->uTrib,
+            true,
+            $identificador . "[item $std->item] Unidade Tributável"
+        );
+        $this->dom->addChild(
+            $is,
+            "qTrib",
+            $this->conditionalNumberFormatting($std->qTrib, 4),
+            true,
+            $identificador . "[item $std->item] Quantidade Tributável"
+        );
+        $this->dom->addChild(
+            $is,
+            'vIS',
+            $this->conditionalNumberFormatting($std->vIS),
+            true,
+            "$identificador [item $std->item] Valor do imposto seletivo"
+        );
+        $this->aIS[$std->item] = $is;
+
+        return $is;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function tagIBSCBSSelTot(stdClass $std): DOMElement
+    {
+        $possible = ['vBCIBSCBS'];
+        $std = $this->equilizeParameters($std, $possible);
+
+        $this->vBCIBSCBS = $this->dom->createElement("vBCIBSCBS", $this->conditionalNumberFormatting($std->vBCIBSCBS));
+
+        return $this->vBCIBSCBS;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggSel(stdClass $std): DOMElement
+    {
+        $possible = ['vBCIS', 'vIS'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'W32 <gSel> - ';
+        $gSel = $this->dom->createElement("gSel");
+
+        $this->dom->addChild(
+            $gSel,
+            'vBCIS',
+            $this->conditionalNumberFormatting($std->vBCIS, 4),
+            true,
+            "$identificador Total da base de cálculo do imposto seletivo"
+        );
+        $this->dom->addChild(
+            $gSel,
+            'vIS',
+            $this->conditionalNumberFormatting($std->vIS),
+            true,
+            "$identificador Total do imposto seletivo "
+        );
+
+        $this->gSel = $gSel;
+
+        return $gSel;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggIBSUFTot(stdClass $std): DOMElement
+    {
+        $possible = ['vDif', 'vDevTrib', 'vIBSUF'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'W37 <gIBSUFTot> - ';
+        $gIBSUFTot = $this->dom->createElement("gIBSUFTot");
+        $this->dom->addChild(
+            $gIBSUFTot,
+            'vDif',
+            $this->conditionalNumberFormatting($std->vDif),
+            true,
+            "$identificador Valor total do diferimento"
+        );
+        $this->dom->addChild(
+            $gIBSUFTot,
+            'vDevTrib',
+            $this->conditionalNumberFormatting($std->vDevTrib),
+            true,
+            "$identificador Valor total de devolução de tributos"
+        );
+        $this->dom->addChild(
+            $gIBSUFTot,
+            'vIBSUF',
+            $this->conditionalNumberFormatting($std->vIBSUF),
+            true,
+            "$identificador Valor total do IBS da UF"
+        );
+
+        $this->gIBSUFTot = $gIBSUFTot;
+
+        return $gIBSUFTot;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggIBSMunTot(stdClass $std): DOMElement
+    {
+        $possible = ['vDif', 'vDevTrib', 'vIBSMun', 'vIBSTot', 'vCredPres', 'vCredPresCondSus'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'W42 <gIBSMunTot> - ';
+        $gIBSMunTot = $this->dom->createElement("gIBSMunTot");
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vDif',
+            $this->conditionalNumberFormatting($std->vDif),
+            true,
+            "$identificador Valor total do diferimento"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vDevTrib',
+            $this->conditionalNumberFormatting($std->vDevTrib),
+            true,
+            "$identificador Valor total de devolução de tributos"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vIBSMun',
+            $this->conditionalNumberFormatting($std->vIBSMun),
+            true,
+            "$identificador Valor total do IBS do Município"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vIBSTot',
+            $this->conditionalNumberFormatting($std->vIBSTot),
+            true,
+            "$identificador Valor total do IBS"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vCredPres',
+            $this->conditionalNumberFormatting($std->vCredPres),
+            true,
+            "$identificador Valor total do crédito presumido"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vCredPresCondSus',
+            $this->conditionalNumberFormatting($std->vCredPresCondSus),
+            true,
+            "$identificador Valor total do crédito presumido em condição suspensiva"
+        );
+
+        $this->gIBSMunTot = $gIBSMunTot;
+
+        return $gIBSMunTot;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggMono(stdClass $std): DOMElement
+    {
+        $possible = ['vTotIBSMono', 'vTotCBSMono', 'vTotNF'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'W57 <gMono> - ';
+        $gMono = $this->dom->createElement("gMono");
+
+        $this->dom->addChild(
+            $gMono,
+            'vTotIBSMono',
+            $this->conditionalNumberFormatting($std->vTotIBSMono),
+            true,
+            "$identificador Total do IBS monofásico"
+        );
+        $this->dom->addChild(
+            $gMono,
+            'vTotCBSMono',
+            $this->conditionalNumberFormatting($std->vTotCBSMono),
+            true,
+            "$identificador Total da CBS monofásica"
+        );
+        $this->dom->addChild(
+            $gMono,
+            'vTotNF',
+            $this->conditionalNumberFormatting($std->vTotNF),
+            true,
+            "$identificador Valor total da NF-e com IBS / CBS / IS"
+        );
+
+        $this->gMono = $gMono;
+
+        return $gMono;
     }
 
     /**
@@ -8162,6 +9183,26 @@ class Make
             $det = $this->dom->createElement("det");
             $det->setAttribute("nItem", $nItem);
             $det->appendChild($prod);
+            //insere imposto seletivo
+            if (!empty($this->aIS[$nItem])) {
+                $child = $this->aIS[$nItem];
+                $this->dom->appChild($det, $child, "Inclusão do node IS");
+            }
+            // Insere valor do Item
+            if (!empty($this->avItem[$nItem])) {
+                $child = $this->avItem[$nItem];
+                $this->dom->appChild($det, $child, "Inclusão do node vItem");
+            }
+            //insere IBS CBS
+            if (!empty($this->aIBSCBS[$nItem])) {
+                $child = $this->aIBSCBS[$nItem];
+                $this->dom->appChild($det, $child, "Inclusão do node IBSCBS");
+            }
+            //insere Documento referenciado
+            if (!empty($this->aDFeReferenciado[$nItem])) {
+                $child = $this->aDFeReferenciado[$nItem];
+                $this->dom->appChild($det, $child, "Inclusão do node DFeReferenciado");
+            }
             //insere imposto
             if (!empty($this->aImposto[$nItem])) {
                 $child = $this->aImposto[$nItem];
