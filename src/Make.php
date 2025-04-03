@@ -249,6 +249,10 @@ class Make
     /**
      * @var array of DOMElements
      */
+    protected $aIS = [];
+    /**
+     * @var array of DOMElements
+     */
     protected $aICMSUFDest = [];
     /**
      * @var array of DOMElements
@@ -3228,7 +3232,7 @@ class Make
             true,
             "$identificador [item $std->item] Valor do imposto seletivo"
         );
-        $this->aDet[$std->item] = $is;
+        $this->aIS[$std->item] = $is;
 
         return $is;
     }
@@ -8332,6 +8336,11 @@ class Make
             $det = $this->dom->createElement("det");
             $det->setAttribute("nItem", $nItem);
             $det->appendChild($prod);
+            //insere imposto seletivo
+            if (!empty($this->aIS[$nItem])) {
+                $child = $this->aIS[$nItem];
+                $this->dom->appChild($det, $child, "Inclusão do node IS");
+            }
             //insere imposto
             if (!empty($this->aImposto[$nItem])) {
                 $child = $this->aImposto[$nItem];
