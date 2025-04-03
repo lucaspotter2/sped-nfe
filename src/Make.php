@@ -253,6 +253,10 @@ class Make
     /**
      * @var array of DOMElements
      */
+    protected $avItem = [];
+    /**
+     * @var array of DOMElements
+     */
     protected $aIBSCBS = [];
     /**
      * @var array of DOMElements
@@ -3724,6 +3728,23 @@ class Make
         $this->aIBSCBS[$std->item]->getElementsByTagName("gIBSCBS")->item(0)->appendChild($gIBSCBSMono);
 
         return $gIBSCBSMono;
+    }
+
+    /**
+     * @return void
+     */
+    public function tagvItem(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'vItem',
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $vItem = $this->dom->createElement("vItem", $this->conditionalNumberFormatting($std->vItem));
+
+        $this->avItem[$std->item] = $vItem;
+
+        return $vItem;
     }
 
     /**
@@ -8912,6 +8933,11 @@ class Make
             if (!empty($this->aIS[$nItem])) {
                 $child = $this->aIS[$nItem];
                 $this->dom->appChild($det, $child, "Inclusão do node IS");
+            }
+            // Insere valor do Item
+            if (!empty($this->avItem[$nItem])) {
+                $child = $this->avItem[$nItem];
+                $this->dom->appChild($det, $child, "Inclusão do node vItem");
             }
             //insere IBS CBS
             if (!empty($this->aIBSCBS[$nItem])) {
