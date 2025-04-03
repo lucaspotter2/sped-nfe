@@ -253,6 +253,10 @@ class Make
     /**
      * @var array of DOMElements
      */
+    protected $aIBSCBS = [];
+    /**
+     * @var array of DOMElements
+     */
     protected $aICMSUFDest = [];
     /**
      * @var array of DOMElements
@@ -3151,6 +3155,38 @@ class Make
         );
         $this->aImposto[$std->item] = $imposto;
         return $imposto;
+    }
+
+    /**
+     * @return void
+     */
+    public function tagIBSCBS(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'CST',
+            'cClassTrib',
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB12 <IBSCBS> - ';
+        $ibsCbs = $this->dom->createElement("IBSCBS");
+
+        $this->dom->addChild(
+            $ibsCbs,
+            'CST',
+            $std->CST,
+            true,
+            "$identificador [item $std->item] Código de Situação Tributária do IBS e CBS"
+        );
+        $this->dom->addChild(
+            $ibsCbs,
+            'cClassTrib',
+            $std->cClassTrib,
+            true,
+            "$identificador [item $std->item] Código de Classificação Tributária do IBS e CBS"
+        );
+        $this->aIBSCBS[$std->item] = $ibsCbs;
+        return $ibsCbs;
     }
 
     /**
@@ -8340,6 +8376,11 @@ class Make
             if (!empty($this->aIS[$nItem])) {
                 $child = $this->aIS[$nItem];
                 $this->dom->appChild($det, $child, "Inclusão do node IS");
+            }
+            //insere IBS CBS
+            if (!empty($this->aIBSCBS[$nItem])) {
+                $child = $this->aIBSCBS[$nItem];
+                $this->dom->appChild($det, $child, "Inclusão do node IBSCBS");
             }
             //insere imposto
             if (!empty($this->aImposto[$nItem])) {
