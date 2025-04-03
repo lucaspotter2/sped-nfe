@@ -3192,6 +3192,28 @@ class Make
     /**
      * @return void
      */
+    public function taggIBSCBS(stdClass $std): DOMElement
+    {
+        $possible = ['item', 'vBC'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB15 <gIBSCBS> - ';
+        $gIBSCBS = $this->dom->createElement("gIBSCBS");
+
+        $this->dom->addChild(
+            $gIBSCBS,
+            'vBC',
+            $this->conditionalNumberFormatting($std->vBC),
+            true,
+            "$identificador [item $std->item] Base de cálculo do IBS e CBS"
+        );
+
+        $this->aIBSCBS[$std->item] = $gIBSCBS;
+        return $gIBSCBS;
+    }
+
+    /**
+     * @return void
+     */
     public function tagIS(stdClass $std): DOMElement
     {
         $possible = [
