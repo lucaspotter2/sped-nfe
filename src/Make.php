@@ -588,6 +588,8 @@ class Make
             'idDest',
             'cMunFG',
             'cMunFGIBS',
+            'tpNFDebito',
+            'tpNFCredito',
             'tpImp',
             'tpEmis',
             'cDV',
@@ -704,13 +706,31 @@ class Make
             true,
             $identificador . "Código do Município de Ocorrência do Fato Gerador do ICMS"
         );
-        if (!empty($std->cMunFGIBS)) {
+        if (!empty($std->cMunFGIBS) && $std->indPres == 5) {
             $this->dom->addChild(
                 $ide,
                 "cMunFGIBS",
                 $std->cMunFGIBS,
                 false,
                 $identificador . "Código do Município de Ocorrência do Fato Gerador do IBS / CBS"
+            );
+        }
+        if (!empty($std->tpNFDebito)) {
+            $this->dom->addChild(
+                $ide,
+                "tpNFDebito",
+                $std->tpNFDebito,
+                false,
+                $identificador . "Tipo de Nota de Débito"
+            );
+        }
+        if (!empty($std->tpNFCredito)) {
+            $this->dom->addChild(
+                $ide,
+                "tpNFCredito",
+                $std->tpNFCredito,
+                false,
+                $identificador . "Tipo de Nota de Crédito"
             );
         }
         $this->dom->addChild(
@@ -784,7 +804,7 @@ class Make
             $identificador . "Versão do Processo de emissão da NF-e"
         );
 
-        if (!empty($std->indMultaJuros)) {
+        if (isset($std->indMultaJuros)) {
             $this->dom->addChild(
                 $ide,
                 "indMultaJuros",
@@ -823,8 +843,7 @@ class Make
     {
         $possible = [
             'tpCompraGov',
-            'pRedutor',
-            'tipoNotaCredito',
+            'pRedutor'
         ];
 
         $std = $this->equilizeParameters($std, $possible);
@@ -847,16 +866,6 @@ class Make
             true,
             $identificador . "Percentual de redução de aliquota em compra governamental"
         );
-
-        if (!empty($std->tipoNotaCredito)) {
-            $this->dom->addChild(
-                $this->gCompraGov,
-                "tipoNotaCredito",
-                $std->tipoNotaCredito,
-                false,
-                $identificador . "Indicador do tipo de nota de crédito que está sendo utilizada "
-            );
-        }
 
         $node = $this->ide->getElementsByTagName("finNFe")->item(0);
 
