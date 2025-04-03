@@ -344,6 +344,15 @@ class Parser
     }
 
     /**
+     * Create tag gCompraGov [B31]
+     * B31|tpCompraGov|pRedutor|tipoNotaCredito|
+     */
+    protected function b31Entity(stdClass $std): void
+    {
+        $this->make->taggCompraGov($std);
+    }
+
+    /**
      * Load fields for tag dest [E]
      * E|xNome|indIEDest|IE|ISUF|IM|email|
      */

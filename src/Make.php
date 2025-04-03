@@ -87,6 +87,10 @@ class Make
      */
     protected $enderEmit;
     /**
+     * @var DOMElement
+     */
+    protected $gCompraGov;
+    /**
      * @var ?DOMElement
      */
     protected $dest;
@@ -700,13 +704,15 @@ class Make
             true,
             $identificador . "Código do Município de Ocorrência do Fato Gerador do ICMS"
         );
-        $this->dom->addChild(
-            $ide,
-            "cMunFGIBS",
-            $std->cMunFGIBS,
-            true,
-            $identificador . "Código do Município de Ocorrência do Fato Gerador do IBS / CBS"
-        );
+        if (!empty($std->cMunFGIBS)) {
+            $this->dom->addChild(
+                $ide,
+                "cMunFGIBS",
+                $std->cMunFGIBS,
+                false,
+                $identificador . "Código do Município de Ocorrência do Fato Gerador do IBS / CBS"
+            );
+        }
         $this->dom->addChild(
             $ide,
             "tpImp",
@@ -777,6 +783,17 @@ class Make
             true,
             $identificador . "Versão do Processo de emissão da NF-e"
         );
+
+        if (!empty($std->indMultaJuros)) {
+            $this->dom->addChild(
+                $ide,
+                "indMultaJuros",
+                $std->indMultaJuros,
+                false,
+                $identificador . "Indicador de Multa e Juros"
+            );
+        }
+
         if (!empty($std->dhCont) && !empty($std->xJust)) {
             $this->dom->addChild(
                 $ide,
@@ -795,6 +812,57 @@ class Make
         }
         $this->ide = $ide;
         return $ide;
+    }
+
+    /**
+     * Grupo de Compra Governamental  B31 pai B01
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggCompraGov(stdClass $std): DOMElement
+    {
+        $possible = [
+            'tpCompraGov',
+            'pRedutor',
+            'tipoNotaCredito',
+        ];
+
+        $std = $this->equilizeParameters($std, $possible);
+
+        $identificador = 'B31 <gCompraGov> - ';
+        $this->gCompraGov = $this->dom->createElement("gCompraGov");
+
+        $this->dom->addChild(
+            $this->gCompraGov,
+            "tpCompraGov",
+            $std->tpCompraGov,
+            true,
+            $identificador . "Tipo de compra governamental"
+        );
+
+        $this->dom->addChild(
+            $this->gCompraGov,
+            "pRedutor",
+            $std->pRedutor,
+            true,
+            $identificador . "Percentual de redução de aliquota em compra governamental"
+        );
+
+        if (!empty($std->tipoNotaCredito)) {
+            $this->dom->addChild(
+                $this->gCompraGov,
+                "tipoNotaCredito",
+                $std->tipoNotaCredito,
+                false,
+                $identificador . "Indicador do tipo de nota de crédito que está sendo utilizada "
+            );
+        }
+
+        $node = $this->ide->getElementsByTagName("finNFe")->item(0);
+
+        $this->ide->insertBefore($this->gCompraGov, $node);
+
+        return $this->gCompraGov;
     }
 
     /**
