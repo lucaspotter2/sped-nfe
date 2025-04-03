@@ -3207,7 +3207,8 @@ class Make
             "$identificador [item $std->item] Base de cálculo do IBS e CBS"
         );
 
-        $this->aIBSCBS[$std->item] = $gIBSCBS;
+        $this->aIBSCBS[$std->item]->appendChild($gIBSCBS);
+
         return $gIBSCBS;
     }
 
