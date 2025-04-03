@@ -3150,6 +3150,87 @@ class Make
     }
 
     /**
+     * @return void
+     */
+    public function tagIS(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'CSTIS',
+            'cClassTribIS',
+            'vBCIS',
+            'pIS',
+            'pISEspec',
+            'uTrib',
+            'qTrib',
+            'vIS',
+        ];
+
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB01 <IS> - ';
+        $is = $this->dom->createElement("IS");
+
+        $this->dom->addChild(
+            $is,
+            'CSTIS',
+            $std->CSTIS,
+            true,
+            "$identificador [item $std->item] Código de Situação Tributária do Imposto Seletivo"
+        );
+        $this->dom->addChild(
+            $is,
+            'cClassTribIS',
+            $std->cClassTribIS,
+            true,
+            "$identificador [item $std->item] Código de Classificação Tributária do Imposto Seletivo"
+        );
+        $this->dom->addChild(
+            $is,
+            'vBCIS',
+            $this->conditionalNumberFormatting($std->vBCIS),
+            true,
+            "$identificador [item $std->item] Valor da Base de Cálculo do Imposto Seletivo"
+        );
+        $this->dom->addChild(
+            $is,
+            'pIS',
+            $this->conditionalNumberFormatting($std->pIS, 4),
+            true,
+            "$identificador [item $std->item] Alíquota do Imposto Seletivo"
+        );
+        if (isset($std->pISEspec)) {
+            $this->dom->addChild(
+                $is,
+                'pISEspec',
+                $this->conditionalNumberFormatting($std->pISEspec, 4),
+                false,
+                "$identificador [item $std->item] Alíquota específica por unidade de medida apropriada"
+            );
+        }
+        $this->dom->addChild(
+            $is,
+            "uTrib",
+            $std->uTrib,
+            true,
+            $identificador . "[item $std->item] Unidade Tributável"
+        );
+        $this->dom->addChild(
+            $is,
+            "qTrib",
+            $this->conditionalNumberFormatting($std->qTrib, 4),
+            true,
+            $identificador . "[item $std->item] Quantidade Tributável"
+        );
+        $this->dom->addChild(
+            $is,
+            'vIS',
+            $this->conditionalNumberFormatting($std->vIS),
+            true,
+            "$identificador [item $std->item] Valor do imposto seletivo"
+        );
+    }
+
+    /**
      * Informações do ICMS da Operação própria e ST N01 pai M01
      * tag NFe/infNFe/det[]/imposto/ICMS
      * NOTA: ajustado NT 2020.005-v1.20
