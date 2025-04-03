@@ -111,6 +111,34 @@ class Make
      */
     protected $total;
     /**
+     * @var DOMElement
+     */
+    protected $IBSCBSSelTot;
+    /**
+     * @var DOMElement
+     */
+    protected $vBCIBSCBS;
+    /**
+     * @var DOMElement
+     */
+    protected $gSel;
+    /**
+     * @var DOMElement
+     */
+    protected $gIBS;
+    /**
+     * @var DOMElement
+     */
+    protected $gIBSUFTot;
+    /**
+     * @var DOMElement
+     */
+    protected $gIBSMunTot;
+    /**
+     * @var DOMElement
+     */
+    protected $gMono;
+    /**
      * @var ?DOMElement
      */
     protected $cobr;
@@ -511,6 +539,16 @@ class Make
         foreach ($this->aDet as $det) {
             $this->dom->appChild($this->infNFe, $det, 'Falta tag "infNFe"');
         }
+        $this->IBSCBSSelTot = $this->dom->createElement("IBSCBSSelTot");
+
+        $this->gIBS = $this->dom->createElement("gIBS");
+        $this->dom->appChild($this->IBSCBSSelTot, $this->gSel, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->IBSCBSSelTot, $this->vBCIBSCBS, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->gIBS, $this->gIBSUFTot, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->gIBS, $this->gIBSMunTot, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->IBSCBSSelTot, $this->gIBS, 'Falta tag "gIBS"');
+        $this->dom->appChild($this->IBSCBSSelTot, $this->gMono, 'Falta tag "gIBS"');
+
         //força a construção do total
         $this->total = $this->dom->createElement("total");
         $this->tagISSQNTot($this->stdISSQN);
@@ -522,6 +560,7 @@ class Make
         }
         //[28a] tag total (326 W01)
         $this->dom->appChild($this->infNFe, $this->total, 'Falta tag "infNFe"');
+        $this->dom->appChild($this->infNFe, $this->IBSCBSSelTot, 'Falta tag "infNFe"');
         //mota a tag vol
         $this->buildVol();
         //[32] tag transp (356 X01)
@@ -3865,6 +3904,184 @@ class Make
         $this->aIS[$std->item] = $is;
 
         return $is;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function tagIBSCBSSelTot(stdClass $std): DOMElement
+    {
+        $possible = ['vBCIBSCBS'];
+        $std = $this->equilizeParameters($std, $possible);
+
+        $this->vBCIBSCBS = $this->dom->createElement("vBCIBSCBS", $this->conditionalNumberFormatting($std->vBCIBSCBS));
+
+        return $this->vBCIBSCBS;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggSel(stdClass $std): DOMElement
+    {
+        $possible = ['vBCIS', 'vIS'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'W32 <gSel> - ';
+        $gSel = $this->dom->createElement("gSel");
+
+        $this->dom->addChild(
+            $gSel,
+            'vBCIS',
+            $this->conditionalNumberFormatting($std->vBCIS, 4),
+            true,
+            "$identificador Total da base de cálculo do imposto seletivo"
+        );
+        $this->dom->addChild(
+            $gSel,
+            'vIS',
+            $this->conditionalNumberFormatting($std->vIS),
+            true,
+            "$identificador Total do imposto seletivo "
+        );
+
+        $this->gSel = $gSel;
+
+        return $gSel;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggIBSUFTot(stdClass $std): DOMElement
+    {
+        $possible = ['vDif', 'vDevTrib', 'vIBSUF'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'W37 <gIBSUFTot> - ';
+        $gIBSUFTot = $this->dom->createElement("gIBSUFTot");
+        $this->dom->addChild(
+            $gIBSUFTot,
+            'vDif',
+            $this->conditionalNumberFormatting($std->vDif),
+            true,
+            "$identificador Valor total do diferimento"
+        );
+        $this->dom->addChild(
+            $gIBSUFTot,
+            'vDevTrib',
+            $this->conditionalNumberFormatting($std->vDevTrib),
+            true,
+            "$identificador Valor total de devolução de tributos"
+        );
+        $this->dom->addChild(
+            $gIBSUFTot,
+            'vIBSUF',
+            $this->conditionalNumberFormatting($std->vIBSUF),
+            true,
+            "$identificador Valor total do IBS da UF"
+        );
+
+        $this->gIBSUFTot = $gIBSUFTot;
+
+        return $gIBSUFTot;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggIBSMunTot(stdClass $std): DOMElement
+    {
+        $possible = ['vDif', 'vDevTrib', 'vIBSMun', 'vIBSTot', 'vCredPres', 'vCredPresCondSus'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'W42 <gIBSMunTot> - ';
+        $gIBSMunTot = $this->dom->createElement("gIBSMunTot");
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vDif',
+            $this->conditionalNumberFormatting($std->vDif),
+            true,
+            "$identificador Valor total do diferimento"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vDevTrib',
+            $this->conditionalNumberFormatting($std->vDevTrib),
+            true,
+            "$identificador Valor total de devolução de tributos"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vIBSMun',
+            $this->conditionalNumberFormatting($std->vIBSMun),
+            true,
+            "$identificador Valor total do IBS do Município"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vIBSTot',
+            $this->conditionalNumberFormatting($std->vIBSTot),
+            true,
+            "$identificador Valor total do IBS"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vCredPres',
+            $this->conditionalNumberFormatting($std->vCredPres),
+            true,
+            "$identificador Valor total do crédito presumido"
+        );
+        $this->dom->addChild(
+            $gIBSMunTot,
+            'vCredPresCondSus',
+            $this->conditionalNumberFormatting($std->vCredPresCondSus),
+            true,
+            "$identificador Valor total do crédito presumido em condição suspensiva"
+        );
+
+        $this->gIBSMunTot = $gIBSMunTot;
+
+        return $gIBSMunTot;
+    }
+
+    /**
+     * @param stdClass $std
+     * @return DOMElement
+     */
+    public function taggMono(stdClass $std): DOMElement
+    {
+        $possible = ['vTotIBSMono', 'vTotCBSMono', 'vTotNF'];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'W57 <gMono> - ';
+        $gMono = $this->dom->createElement("gMono");
+
+        $this->dom->addChild(
+            $gMono,
+            'vTotIBSMono',
+            $this->conditionalNumberFormatting($std->vTotIBSMono),
+            true,
+            "$identificador Total do IBS monofásico"
+        );
+        $this->dom->addChild(
+            $gMono,
+            'vTotCBSMono',
+            $this->conditionalNumberFormatting($std->vTotCBSMono),
+            true,
+            "$identificador Total da CBS monofásica"
+        );
+        $this->dom->addChild(
+            $gMono,
+            'vTotNF',
+            $this->conditionalNumberFormatting($std->vTotNF),
+            true,
+            "$identificador Valor total da NF-e com IBS / CBS / IS"
+        );
+
+        $this->gMono = $gMono;
+
+        return $gMono;
     }
 
     /**
