@@ -3229,6 +3229,8 @@ class Make
             "$identificador [item $std->item] Valor do imposto seletivo"
         );
         $this->aDet[$std->item] = $is;
+
+        return $is;
     }
 
     /**
