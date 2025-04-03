@@ -583,6 +583,7 @@ class Make
             'tpNF',
             'idDest',
             'cMunFG',
+            'cMunFGIBS',
             'tpImp',
             'tpEmis',
             'cDV',
@@ -697,7 +698,14 @@ class Make
             "cMunFG",
             $std->cMunFG,
             true,
-            $identificador . "Código do Município de Ocorrência do Fato Gerador"
+            $identificador . "Código do Município de Ocorrência do Fato Gerador do ICMS"
+        );
+        $this->dom->addChild(
+            $ide,
+            "cMunFGIBS",
+            $std->cMunFGIBS,
+            true,
+            $identificador . "Código do Município de Ocorrência do Fato Gerador do IBS / CBS"
         );
         $this->dom->addChild(
             $ide,
