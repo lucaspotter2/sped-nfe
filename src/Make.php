@@ -253,6 +253,10 @@ class Make
     /**
      * @var array of DOMElements
      */
+    protected $aDFeReferenciado = [];
+    /**
+     * @var array of DOMElements
+     */
     protected $avItem = [];
     /**
      * @var array of DOMElements
@@ -3745,6 +3749,39 @@ class Make
         $this->avItem[$std->item] = $vItem;
 
         return $vItem;
+    }
+
+    /**
+     * @return void
+     */
+    public function tagDFeReferenciado(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'chaveAcesso',
+            'nItem',
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'VC01 <DFeReferenciado> - ';
+        $dfe = $this->dom->createElement("DFeReferenciado");
+        $this->dom->addChild(
+            $dfe,
+            'chaveAcesso',
+            $std->chaveAcesso,
+            true,
+            "$identificador [item $std->item] Chave de acesso do DF-e referenciado "
+        );
+        $this->dom->addChild(
+            $dfe,
+            'nItem',
+            $std->nItem,
+            true,
+            "$identificador [item $std->item] Número do item do documento referenciado"
+        );
+
+        $this->aDFeReferenciado[$std->item] = $dfe;
+
+        return $dfe;
     }
 
     /**
@@ -8943,6 +8980,11 @@ class Make
             if (!empty($this->aIBSCBS[$nItem])) {
                 $child = $this->aIBSCBS[$nItem];
                 $this->dom->appChild($det, $child, "Inclusão do node IBSCBS");
+            }
+            //insere Documento referenciado
+            if (!empty($this->aDFeReferenciado[$nItem])) {
+                $child = $this->aDFeReferenciado[$nItem];
+                $this->dom->appChild($det, $child, "Inclusão do node DFeReferenciado");
             }
             //insere imposto
             if (!empty($this->aImposto[$nItem])) {
