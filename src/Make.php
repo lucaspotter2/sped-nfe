@@ -897,7 +897,7 @@ class Make
     public function taggCompraGov(stdClass $std): DOMElement
     {
         $possible = [
-            'tpCompraGov',
+            'tpEnteGov',
             'pRedutor'
         ];
 
@@ -908,8 +908,8 @@ class Make
 
         $this->dom->addChild(
             $this->gCompraGov,
-            "tpCompraGov",
-            $std->tpCompraGov,
+            "tpEnteGov",
+            $std->tpEnteGov,
             true,
             $identificador . "Tipo de compra governamental"
         );
@@ -3267,7 +3267,6 @@ class Make
         $possible = [
             'item',
             'pIBSUF',
-            'vTribOP',
             'pDif',
             'vDif',
             'vDevTrib',
@@ -3289,13 +3288,6 @@ class Make
             $this->conditionalNumberFormatting($std->pIBSUF, 4),
             true,
             "$identificador [item $std->item] Alíquota do IBS de competência das UF"
-        );
-        $this->dom->addChild(
-            $gIBSUF,
-            'vTribOP',
-            $this->conditionalNumberFormatting($std->vTribOP),
-            true,
-            "$identificador [item $std->item] Valor bruto do tributo na operação"
         );
         if (isset($std->pDif)) {
             $identificador = 'UB21 <gDif> - ';
@@ -3347,7 +3339,7 @@ class Make
             );
             $gIBSUF->appendChild($gRed);
         }
-        if (isset($std->CSTReg)) {
+        /*if (isset($std->CSTReg)) {
             $identificador = 'UB29 <gTribRegular> - ';
             $gTribRegular = $this->dom->createElement("gTribRegular");
             $this->dom->addChild(
@@ -3379,7 +3371,7 @@ class Make
                 "$identificador [item $std->item] Valor do Tributo (IBS)"
             );
             $gIBSUF->appendChild($gTribRegular);
-        }
+        }*/
         $identificador = 'UB17 <gIBSUF> - ';
         $this->dom->addChild(
             $gIBSUF,
@@ -3402,7 +3394,6 @@ class Make
         $possible = [
             'item',
             'pIBSMun',
-            'vTribOP',
             'pDif',
             'vDif',
             'vDevTrib',
@@ -3425,13 +3416,6 @@ class Make
             $this->conditionalNumberFormatting($std->pIBSMun, 4),
             true,
             "$identificador [item $std->item] Alíquota do IBS de competência do Município"
-        );
-        $this->dom->addChild(
-            $gIBSMun,
-            'vTribOP',
-            $this->conditionalNumberFormatting($std->vTribOP),
-            true,
-            "$identificador [item $std->item] Valor bruto do tributo na operação"
         );
         if (isset($std->pDif)) {
             $identificador = 'UB40 <gDif> - ';
@@ -3483,7 +3467,7 @@ class Make
             );
             $gIBSMun->appendChild($gRed);
         }
-        if (isset($std->CSTReg)) {
+        /*if (isset($std->CSTReg)) {
             $identificador = 'UB48 <gTribRegular> - ';
             $gTribRegular = $this->dom->createElement("gTribRegular");
             $this->dom->addChild(
@@ -3515,7 +3499,7 @@ class Make
                 "$identificador [item $std->item] Valor do Tributo (IBS)"
             );
             $gIBSMun->appendChild($gTribRegular);
-        }
+        }*/
         $identificador = 'UB36 <gIBSMun> - ';
         $this->dom->addChild(
             $gIBSMun,
@@ -3538,7 +3522,6 @@ class Make
         $possible = [
             'item',
             'pCBS',
-            'vTribOP',
             'pDif',
             'vDif',
             'vDevTrib',
@@ -3566,48 +3549,6 @@ class Make
             true,
             "$identificador [item $std->item] Alíquota da CBS"
         );
-        $this->dom->addChild(
-            $gCBS,
-            'vTribOP',
-            $this->conditionalNumberFormatting($std->vTribOP),
-            true,
-            "$identificador [item $std->item] Valor bruto do tributo na operação"
-        );
-        if (isset($std->cCredPres)) {
-            $identificador = 'UB64 <gCBSCredPres> - ';
-            $gCBSCredPres = $this->dom->createElement("gCBSCredPres");
-
-            $this->dom->addChild(
-                $gCBSCredPres,
-                'cCredPres',
-                $std->cCredPres,
-                true,
-                "$identificador [item $std->item] Código de Classificação do Crédito Presumido"
-            );
-            $this->dom->addChild(
-                $gCBSCredPres,
-                'pCredPres',
-                $this->conditionalNumberFormatting($std->pCredPres, 4),
-                true,
-                "$identificador [item $std->item] Percentual do Crédito Presumido"
-            );
-            $this->dom->addChild(
-                $gCBSCredPres,
-                'vCredPres',
-                $this->conditionalNumberFormatting($std->vCredPres),
-                true,
-                "$identificador [item $std->item] Valor do Crédito Presumido"
-            );
-            $this->dom->addChild(
-                $gCBSCredPres,
-                'vCredPresCondSus',
-                $this->conditionalNumberFormatting($std->vCredPresCondSus),
-                true,
-                "$identificador [item $std->item] Valor do Crédito Presumido em condição suspensiva"
-            );
-
-            $gCBS->appendChild($gCBSCredPres);
-        }
 
         if (isset($std->pDif)) {
             $identificador = 'UB69 <gDif> - ';
@@ -3659,39 +3600,7 @@ class Make
             );
             $gCBS->appendChild($gRed);
         }
-        if (isset($std->CSTReg)) {
-            $identificador = 'UB77 <gTribRegular> - ';
-            $gTribRegular = $this->dom->createElement("gTribRegular");
-            $this->dom->addChild(
-                $gTribRegular,
-                'CSTReg',
-                $std->CSTReg,
-                true,
-                "$identificador [item $std->item] Código de Situação Tributária do IBS e CBS"
-            );
-            $this->dom->addChild(
-                $gTribRegular,
-                'cClassTribReg',
-                $std->cClassTribReg,
-                true,
-                "$identificador [item $std->item] Código de Classificação Tributária do IBS e CBS"
-            );
-            $this->dom->addChild(
-                $gTribRegular,
-                'pAliqEfetReg',
-                $this->conditionalNumberFormatting($std->pAliqEfetReg, 4),
-                true,
-                "$identificador [item $std->item] Valor da alíquota"
-            );
-            $this->dom->addChild(
-                $gTribRegular,
-                'vTribReg',
-                $this->conditionalNumberFormatting($std->vTribReg),
-                true,
-                "$identificador [item $std->item] Valor do Tributo (CBS)"
-            );
-            $gCBS->appendChild($gTribRegular);
-        }
+
         $identificador = 'UB60 <gCBS> - ';
         $this->dom->addChild(
             $gCBS,
@@ -3719,7 +3628,7 @@ class Make
             'vCredPresCondSus'
         ];
         $std = $this->equilizeParameters($std, $possible);
-        $identificador = 'UB55 <gIBSCredPres> - ';
+        $identificador = 'UB73 <gIBSCredPres> - ';
         $gIBSCredPres = $this->dom->createElement("gIBSCredPres");
 
         $this->dom->addChild(
@@ -3754,6 +3663,141 @@ class Make
         $this->aIBSCBS[$std->item]->getElementsByTagName("gIBSCBS")->item(0)->appendChild($gIBSCredPres);
 
         return $gIBSCredPres;
+    }
+
+    /**
+     * @return void
+     */
+    public function taggCBSCredPres(stdClass $std): DOMElement
+    {
+        $possible = [
+            'item',
+            'cCredPres',
+            'pCredPres',
+            'vCredPres',
+            'vCredPresCondSus'
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB78 <gCBSCredPres> - ';
+        $gCBSCredPres = $this->dom->createElement("gCBSCredPres");
+
+        $this->dom->addChild(
+            $gCBSCredPres,
+            'cCredPres',
+            $std->cCredPres,
+            true,
+            "$identificador [item $std->item] Código de Classificação do Crédito Presumido"
+        );
+        $this->dom->addChild(
+            $gCBSCredPres,
+            'pCredPres',
+            $this->conditionalNumberFormatting($std->pCredPres, 4),
+            true,
+            "$identificador [item $std->item] Percentual do Crédito Presumido"
+        );
+        $this->dom->addChild(
+            $gCBSCredPres,
+            'vCredPres',
+            $this->conditionalNumberFormatting($std->vCredPres),
+            true,
+            "$identificador [item $std->item] Valor do Crédito Presumido"
+        );
+        $this->dom->addChild(
+            $gCBSCredPres,
+            'vCredPresCondSus',
+            $this->conditionalNumberFormatting($std->vCredPresCondSus),
+            true,
+            "$identificador [item $std->item] Valor do Crédito Presumido em condição suspensiva"
+        );
+
+        $this->aIBSCBS[$std->item]->getElementsByTagName("gIBSCBS")->item(0)->appendChild($gCBSCredPres);
+
+        return $gCBSCredPres;
+    }
+
+    /**
+     * @return void
+     */
+    public function taggTribRegular(stdClass $std)
+    {
+        $possible = [
+            'item',
+            'CSTReg',
+            'cClassTribReg',
+            'pAliqEfetRegIBSUF',
+            'vTribRegIBSUF',
+            'pAliqEfetRegIBSMun',
+            'vTribRegIBSMun',
+            'pAliqEfetRegCBS',
+            'vTribRegCBS'
+        ];
+
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = 'UB68 <gTribRegular> - ';
+        $gTribRegular = $this->dom->createElement("gTribRegular");
+
+        if (isset($std->CSTReg)) {
+            $this->dom->addChild(
+                $gTribRegular,
+                'CSTReg',
+                $std->CSTReg,
+                true,
+                "$identificador [item $std->item] Código de Situação Tributária do IBS e CBS"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'cClassTribReg',
+                $std->cClassTribReg,
+                true,
+                "$identificador [item $std->item] Código de Classificação Tributária do IBS e CBS"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'pAliqEfetRegIBSUF',
+                $this->conditionalNumberFormatting($std->pAliqEfetRegIBSUF, 4),
+                true,
+                "$identificador [item $std->item] Valor da alíquota do IBS da UF"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'vTribRegIBSUF',
+                $this->conditionalNumberFormatting($std->vTribRegIBSUF),
+                true,
+                "$identificador [item $std->item] Valor do Tributo do IBS da UF"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'pAliqEfetRegIBSMun',
+                $this->conditionalNumberFormatting($std->pAliqEfetRegIBSMun, 4),
+                true,
+                "$identificador [item $std->item] Valor da alíquota do IBS do Município"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'vTribRegIBSMun',
+                $this->conditionalNumberFormatting($std->vTribRegIBSMun),
+                true,
+                "$identificador [item $std->item] Valor do Tributo do IBS do Município"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'pAliqEfetRegCBS',
+                $this->conditionalNumberFormatting($std->pAliqEfetRegCBS, 4),
+                true,
+                "$identificador [item $std->item] Valor da alíquota da CBS"
+            );
+            $this->dom->addChild(
+                $gTribRegular,
+                'vTribRegCBS',
+                $this->conditionalNumberFormatting($std->vTribRegCBS),
+                true,
+                "$identificador [item $std->item] Valor do Tributo da CBS"
+            );
+
+            $this->aIBSCBS[$std->item]->getElementsByTagName("gIBSCBS")->item(0)->appendChild($gTribRegular);
+
+            return $gTribRegular;
+        }
     }
 
     /**
