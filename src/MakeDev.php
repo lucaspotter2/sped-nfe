@@ -42,7 +42,7 @@ use stdClass;
 use DOMElement;
 use DateTime;
 
-final class MakeDev
+class MakeDev
 {
     use TraitTagInfNfe;
     use TraitTagIde;
