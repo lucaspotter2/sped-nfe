@@ -458,6 +458,9 @@ trait TraitTagDetIBSCBS
             "$identificador Valor do Crédito Presumido em condição suspensiva. (vCredPres)"
         );
         $this->aIBSCredPres[$std->item] = $gIBSCredPres;
+
+        $this->aIBSCBS[$std->item]->appendChild($gIBSCredPres);
+
         return $gIBSCredPres;
     }
 
@@ -513,6 +516,9 @@ trait TraitTagDetIBSCBS
             "$identificador Valor do Crédito Presumido em condição suspensiva. (vCredPres)"
         );
         $this->aCBSCredPres[$std->item] = $gCBSCredPres;
+
+        $this->aIBSCBS[$std->item]->appendChild($gCBSCredPres);
+
         return $gCBSCredPres;
     }
 
