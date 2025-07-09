@@ -459,7 +459,10 @@ trait TraitTagDetIBSCBS
         );
         $this->aIBSCredPres[$std->item] = $gIBSCredPres;
 
-        $this->aIBSCBS[$std->item]->appendChild($gIBSCredPres);
+        $gIBSCBS = $this->aIBSCBS[$std->item]->getElementsByTagName('gIBSCBS');
+        if ($gIBSCBS->length > 0) {
+            $gIBSCBS->appendChild($gIBSCredPres);
+        }
 
         return $gIBSCredPres;
     }
@@ -517,7 +520,10 @@ trait TraitTagDetIBSCBS
         );
         $this->aCBSCredPres[$std->item] = $gCBSCredPres;
 
-        $this->aIBSCBS[$std->item]->appendChild($gCBSCredPres);
+        $gIBSCBS = $this->aIBSCBS[$std->item]->getElementsByTagName('gIBSCBS');
+        if ($gIBSCBS->length > 0) {
+            $gIBSCBS->appendChild($gCBSCredPres);
+        }
 
         return $gCBSCredPres;
     }
