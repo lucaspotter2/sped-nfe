@@ -461,7 +461,7 @@ trait TraitTagDetIBSCBS
 
         $gIBSCBS = $this->aIBSCBS[$std->item]->getElementsByTagName('gIBSCBS');
         if ($gIBSCBS->length > 0) {
-            $gIBSCBS->appendChild($gIBSCredPres);
+            $gIBSCBS->item(0)->appendChild($gIBSCredPres);
         }
 
         return $gIBSCredPres;
@@ -522,7 +522,7 @@ trait TraitTagDetIBSCBS
 
         $gIBSCBS = $this->aIBSCBS[$std->item]->getElementsByTagName('gIBSCBS');
         if ($gIBSCBS->length > 0) {
-            $gIBSCBS->appendChild($gCBSCredPres);
+            $gIBSCBS->item(0)->appendChild($gCBSCredPres);
         }
 
         return $gCBSCredPres;
