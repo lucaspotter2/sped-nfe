@@ -1545,43 +1545,7 @@ class MakeDev
             $this->addTag($total, $this->retTrib);
         }
         if ($this->schema > 9) {
-            //Totalizador do IS
-            if (empty($this->ISTot)) {
-                //não foi informado o total do IS, obter do calculado
-                $tis = [
-                    'vIS' => null
-                ];
-                $this->tagISTot((object) $tis);
-            }
             $this->addTag($total, $this->ISTot);
-            //Totalizador do IBSCBS
-            if (empty($this->IBSCBSTot)) {
-                //não foi informado o total do IBSCBS, obter do calculado
-                $ib = [
-                    'vBCIBSCBS',
-                    'gIBS_vIBS',
-                    'gIBS_vCredPres',
-                    'gIBS_vCredPresCondSus',
-                    'gIBSUF_vDif',
-                    'gIBSUF_vDevTrib',
-                    'gIBSUF_vIBSUF',
-                    'gIBSMun_vDif',
-                    'gIBSMun_vDevTrib',
-                    'gIBSMun_vIBSMun',
-                    'gCBS_vDif',
-                    'gCBS_vDevTrib',
-                    'gCBS_vCBS',
-                    'gCBS_vCredPres',
-                    'gCBS_vCredPresCondSus',
-                    'gMono_vIBSMono',
-                    'gMono_vCBSMono',
-                    'gMono_vIBSMonoReten',
-                    'gMono_vCBSMonoReten',
-                    'gMono_vIBSMonoRet',
-                    'gMono_vCBSMonoRet',
-                ];
-                $this->tagIBSCBSTot((object) $ib);
-            }
             $this->addTag($total, $this->IBSCBSTot);
             //campo vNFTot PL_010
             $vNFTot = $this->stdTot->vNF + $this->stdTot->vIBS + $this->stdTot->vCBS + $this->stdTot->vIS;
