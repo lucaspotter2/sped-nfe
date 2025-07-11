@@ -450,13 +450,15 @@ trait TraitTagDetIBSCBS
             true,
             "$identificador Valor do Crédito Presumido (vCredPres)"
         );
-        $this->dom->addChild(
-            $gIBSCredPres,
-            "vCredPresCondSus",
-            $this->conditionalNumberFormatting($std->vCredPresCondSus),
-            true,
-            "$identificador Valor do Crédito Presumido em condição suspensiva. (vCredPres)"
-        );
+        if ($std->vCredPresCondSus > 0) {
+            $this->dom->addChild(
+                $gIBSCredPres,
+                "vCredPresCondSus",
+                $this->conditionalNumberFormatting($std->vCredPresCondSus),
+                true,
+                "$identificador Valor do Crédito Presumido em condição suspensiva. (vCredPres)"
+            );
+        }
         $this->aIBSCredPres[$std->item] = $gIBSCredPres;
 
         $gIBSCBS = $this->aIBSCBS[$std->item]->getElementsByTagName('gIBSCBS');
@@ -511,13 +513,15 @@ trait TraitTagDetIBSCBS
             true,
             "$identificador Valor do Crédito Presumido (vCredPres)"
         );
-        $this->dom->addChild(
-            $gCBSCredPres,
-            "vCredPresCondSus",
-            $this->conditionalNumberFormatting($std->vCredPresCondSus),
-            true,
-            "$identificador Valor do Crédito Presumido em condição suspensiva. (vCredPres)"
-        );
+        if ($std->vCredPresCondSus > 0) {
+            $this->dom->addChild(
+                $gCBSCredPres,
+                "vCredPresCondSus",
+                $this->conditionalNumberFormatting($std->vCredPresCondSus),
+                true,
+                "$identificador Valor do Crédito Presumido em condição suspensiva. (vCredPres)"
+            );
+        }
         $this->aCBSCredPres[$std->item] = $gCBSCredPres;
 
         $gIBSCBS = $this->aIBSCBS[$std->item]->getElementsByTagName('gIBSCBS');
