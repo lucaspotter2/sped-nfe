@@ -335,10 +335,6 @@ trait TraitTagDetIBSCBS
             'item',
             'CSTReg',
             'cClassTribReg',
-            'pAliqEfetRegIBSUF',
-            'vTribRegIBSUF',
-            'pAliqEfetRegIBSMun',
-            'vTribRegIBSMun',
             'pAliqEfetRegCBS',
             'vTribRegCBS',
         ];
@@ -359,34 +355,6 @@ trait TraitTagDetIBSCBS
             true,
             "$identificador Informar qual seria o cClassTrib caso não cumprida a condição "
             . "resolutória/suspensiva (cClassTribReg)"
-        );
-        $this->dom->addChild(
-            $gTribRegular,
-            "pAliqEfetRegIBSUF",
-            $std->pAliqEfetRegIBSUF,
-            true,
-            "$identificador Alíquota do IBS da UF (pAliqEfetRegIBSUF)"
-        );
-        $this->dom->addChild(
-            $gTribRegular,
-            "vTribRegIBSUF",
-            $std->vTribRegIBSUF,
-            true,
-            "$identificador Valor do IBS da UF (vTribRegIBSUF)"
-        );
-        $this->dom->addChild(
-            $gTribRegular,
-            "pAliqEfetRegIBSMun",
-            $std->pAliqEfetRegIBSMun,
-            true,
-            "$identificador Alíquota do IBS do Município (pAliqEfetRegIBSMun)"
-        );
-        $this->dom->addChild(
-            $gTribRegular,
-            "vTribRegIBSMun",
-            $std->vTribRegIBSMun,
-            true,
-            "$identificador Valor do IBS do Município (vTribRegIBSMun)"
         );
         $this->dom->addChild(
             $gTribRegular,
