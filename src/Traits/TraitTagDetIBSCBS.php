@@ -57,6 +57,7 @@ trait TraitTagDetIBSCBS
             'gIBSMun_pAliqEfet', //opcional Alíquota Efetiva do IBS de competência do Município
                 // que será aplicada a BC 3v2-4
             'gIBSMun_vIBSMun', //opcional Valor do IBS de competência do Município 13v2
+            'vIBS',
             // dados CBS (imposto federal)
             'gCBS_pCBS', //opcional Alíquota da CBS 3v2-4
                 // OBRIGATÓRIO se vBC for informado
@@ -247,6 +248,10 @@ trait TraitTagDetIBSCBS
                 "$identificador Valor do IBS de competência do Município (vIBSMun)"
             );
             $gIBSCBS->appendChild($gIBSMun);
+
+            $this->vIBS = $this->dom->createElement("vIBS", $this->conditionalNumberFormatting($std->vIBS));
+            $gIBSCBS->appendChild($this->vIBS);
+
             //gripo de Informações da CBS
             $identificador = "UB12 <IBSCBS/gIBSCBS/gCBS> -";
             $gCBS = $this->dom->createElement("gCBS");
