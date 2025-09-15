@@ -549,7 +549,7 @@ class MakeDev
         $this->stdISSQNTot->vDescIncond = 0;
         $this->stdISSQNTot->vDescCond = 0;
         $this->stdISSQNTot->vISSRet = 0;
-        $this->stdISSQNTot->cRegTrib = 0;
+        $this->stdISSQNTot->cRegTrib = null;
 
         $this->stdIStot  = new stdClass();
         $this->stdIStot->vIS = 0;
