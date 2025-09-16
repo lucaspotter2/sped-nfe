@@ -57,7 +57,7 @@ trait TraitTagDetISSQN
             $this->stdISSQNTot->vDescCond += $std->vDescCond ?? 0.0;
         }
         //$this->aItensServ[] = $std->item;
-        /**
+
         // totalizador
         if ($this->aProd[$std->item]->getElementsByTagName('indTot')->item(0)->nodeValue == 1) {
             // Captura o valor do item
@@ -66,7 +66,7 @@ trait TraitTagDetISSQN
             // Remove o valor to totalizador de produtos e Adiciona o valor do item no totalizador de serviços
             $this->stdTot->vProd -= $vProd;
             $this->stdISSQNTot->vServ += $vProd;
-        }*/
+        }
 
         $issqn = $this->dom->createElement("ISSQN");
         $this->dom->addChild(
