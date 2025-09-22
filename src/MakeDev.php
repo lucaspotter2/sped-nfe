@@ -1549,13 +1549,15 @@ class MakeDev
             $this->addTag($total, $this->IBSCBSTot);
             //campo vNFTot PL_010
             $vNFTot = $this->stdTot->vNF + $this->stdTot->vIBS + $this->stdTot->vCBS + $this->stdTot->vIS;
-            $this->dom->addChild(
-                $total,
-                "vNFTot",
-                $this->conditionalNumberFormatting($vNFTot, 2),
-                false,
-                "$identificador Valor total da NF-e com IBS / CBS / IS"
-            );
+            if ($vNFTot > 0) {
+                $this->dom->addChild(
+                    $total,
+                    "vNFTot",
+                    $this->conditionalNumberFormatting($vNFTot, 2),
+                    false,
+                    "$identificador Valor total da NF-e com IBS / CBS / IS"
+                );
+            }
         }
         $this->addTag($this->infNFe, $total);
     }
