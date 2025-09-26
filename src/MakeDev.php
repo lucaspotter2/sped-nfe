@@ -1545,18 +1545,61 @@ class MakeDev
             $this->addTag($total, $this->retTrib);
         }
         if ($this->schema > 9) {
-            $this->addTag($total, $this->ISTot);
-            $this->addTag($total, $this->IBSCBSTot);
-            //campo vNFTot PL_010
-            $vNFTot = $this->stdTot->vNF + $this->stdTot->vIBS + $this->stdTot->vCBS + $this->stdTot->vIS;
-            if ($vNFTot > 0) {
-                $this->dom->addChild(
-                    $total,
-                    "vNFTot",
-                    $this->conditionalNumberFormatting($vNFTot, 2),
-                    false,
-                    "$identificador Valor total da NF-e com IBS / CBS / IS"
-                );
+            //Totalizador do IS
+            if (empty($this->ISTot) && !empty($this->stdIStot->vIS)) {
+                //não foi informado o total do IS, obter do calculado
+                $tis = [
+                    'vIS' => $this->stdIStot->vIS
+                ];
+                $this->tagISTot((object)$tis);
+            }
+            if (!empty($this->ISTot)) {
+                $this->addTag($total, $this->ISTot);
+            }
+            //Totalizador do IBSCBS
+            if (empty($this->IBSCBSTot) && !empty($this->cst_ibscbs)) {
+                //não foi informado o total do IBSCBS, obter do calculado
+                $ib = [
+                    'vBCIBSCBS',
+                    'gIBS_vIBS',
+                    'gIBS_vCredPres',
+                    'gIBS_vCredPresCondSus',
+                    'gIBSUF_vDif',
+                    'gIBSUF_vDevTrib',
+                    'gIBSUF_vIBSUF',
+                    'gIBSMun_vDif',
+                    'gIBSMun_vDevTrib',
+                    'gIBSMun_vIBSMun',
+                    'gCBS_vDif',
+                    'gCBS_vDevTrib',
+                    'gCBS_vCBS',
+                    'gCBS_vCredPres',
+                    'gCBS_vCredPresCondSus',
+                    'gMono_vIBSMono',
+                    'gMono_vCBSMono',
+                    'gMono_vIBSMonoReten',
+                    'gMono_vCBSMonoReten',
+                    'gMono_vIBSMonoRet',
+                    'gMono_vCBSMonoRet',
+                ];
+                $this->tagIBSCBSTot((object)$ib);
+            }
+            if (!empty($this->IBSCBSTot)) {
+                $this->addTag($total, $this->IBSCBSTot);
+                //campo vNFTot PL_010
+                //if (empty($this->vNFTot)) {
+                //$this->vNFTot = $this->stdTot->vNF;
+                //@todo 2026 + $this->stdTot->vIBS + $this->stdTot->vCBS + $this->stdTot->vIS;
+                //}
+                if (!empty($this->vNFTot)) {
+                    $this->dom->addChild(
+                        $total,
+                        "vNFTot",
+                        $this->conditionalNumberFormatting($this->vNFTot, 2),
+                        false,
+                        "$identificador Valor total da NF-e com IBS / CBS / IS"
+                    );
+                }
             }
         }
         $this->addTag($this->infNFe, $total);
