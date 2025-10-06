@@ -76,6 +76,7 @@ trait TraitTagDetICMS
             'motRedAdRem',
             'qBCMono',
             'adRemICMS',
+            'qBCMonoRet',
             'vICMSMono',
             'vICMSMonoOp',
             'adRemICMSReten',
