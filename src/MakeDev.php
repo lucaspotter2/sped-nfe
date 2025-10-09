@@ -892,6 +892,12 @@ class MakeDev
                 $this->addTag($icms, $this->aICMS[$item]);
                 $this->addTag($imposto, $icms, 'Falta a tag det/imposto!');
             }
+            if (!empty($this->aICMSST[$item])) {
+                $flagICMS = true;
+                $icmsst = $this->dom->createElement("ICMS");
+                $this->addTag($icmsst, $this->aICMSST[$item]);
+                $this->addTag($imposto, $icmsst, 'Falta a tag det/imposto!');
+            }
             if (!empty($this->aICMSSN[$item])) {
                 $flagICMS = true;
                 $icmssn = $this->dom->createElement("ICMS");
